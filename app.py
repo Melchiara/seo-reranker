@@ -1,6 +1,6 @@
 import streamlit as st
 from google.cloud import discoveryengine_v1alpha as discoveryengine
-import os
+from google.oauth2 import service_account
 import csv
 import io
 
@@ -11,15 +11,10 @@ st.set_page_config(page_title="SEO Reranker", page_icon="📊", layout="wide")
 st.title("📊 SEO Reranker — Google Ranking API")
 st.markdown("Testa la pertinenza dei tuoi testi rispetto a una keyword")
 
-# ---- CREDENZIALI ----
-cred_path = st.sidebar.text_input(
-    "Percorso credenziali JSON",
-    value=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", ""),
-    placeholder="C:/percorso/del/tuo/file.json",
-    help="File JSON scaricato dalla Google Cloud Console",
+# ---- CREDENZIALI dai Secrets ----
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
 )
-if cred_path:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
 
 # ---- INPUT KEYWORD ----
 keyword = st.text_input("🔍 Keyword", placeholder="es. lampade interno")
@@ -47,16 +42,14 @@ for i in range(1, n_testi + 1):
 # ---- ANALISI ----
 if st.button("🚀 Analizza pertinenza", type="primary"):
 
-    if not cred_path:
-        st.error("Inserisci il percorso del file JSON delle credenziali nella sidebar")
-    elif not keyword:
+    if not keyword:
         st.error("Inserisci una keyword")
     elif len(testi_input) < 2:
         st.error("Inserisci almeno 2 testi da confrontare")
     else:
         with st.spinner("Analisi in corso..."):
             try:
-                client = discoveryengine.RankServiceClient()
+                client = discoveryengine.RankServiceClient(credentials=credentials)
                 ranking_config = client.ranking_config_path(
                     project=PROJECT_ID,
                     location="global",
