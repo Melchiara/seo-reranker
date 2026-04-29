@@ -8,6 +8,13 @@ import io
 PROJECT_ID = "seo-ranker-494109"
 
 st.set_page_config(page_title="SEO Reranker", page_icon="📊", layout="wide")
+
+# ---- PASSWORD ----
+password = st.sidebar.text_input("Password", type="password")
+if password != st.secrets["app_password"]:
+    st.warning("Inserisci la password per accedere all'app.")
+    st.stop()
+
 st.title("📊 SEO Reranker — Google Ranking API")
 st.markdown("Testa la pertinenza dei tuoi testi rispetto a una keyword")
 
