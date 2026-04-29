@@ -10,9 +10,16 @@ PROJECT_ID = "seo-ranker-494109"
 st.set_page_config(page_title="SEO Reranker", page_icon="📊", layout="wide")
 
 # ---- PASSWORD ----
-password = st.sidebar.text_input("Password", type="password")
-if password != st.secrets["app_password"]:
-    st.warning("Inserisci la password per accedere all'app.")
+if "autenticato" not in st.session_state:
+    st.session_state.autenticato = False
+
+if not st.session_state.autenticato:
+    password = st.text_input("Password", type="password")
+    if password == st.secrets["app_password"]:
+        st.session_state.autenticato = True
+        st.rerun()
+    elif password:
+        st.error("Password errata")
     st.stop()
 
 st.title("📊 SEO Reranker — Google Ranking API")
